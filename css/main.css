@@ -954,7 +954,7 @@ pre .javascript .function {
 .btn:hover {
   border-color: #222;
   color: #fff;
-  background: #0cc;
+  background: #97d9d9;
 }
 .btn +.btn {
   margin: 0 0 8px 8px;
@@ -1823,7 +1823,7 @@ pre .javascript .function {
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: #fb5e7e;
+  background: #380063;
 }
 .links-of-blogroll {
   font-size: 13px;
