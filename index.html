@@ -335,8 +335,7 @@
 
       
         
-          
-            <blockquote>
+          <blockquote>
 <p>写在前面 :</p>
 <ol>
 <li><p>基于 Generating Function 的计数问题, 最终要归化到对于一个特定形式幂级数 $F(x)$ 的处理</p>
@@ -355,102 +354,13 @@
 F(x) = \sum_{i=0}^n a_ix^i,\;G(x) = \sum_{i=0}^mb_ix^i</script><p>请计算</p>
 <script type="math/tex; mode=display">
 H(x)=F(x)G(x)</script></blockquote>
-<p>如果基于<strong>系数表示</strong>, ${\rm O}(nm)$ 的做法是显然的, 有没有别的思考角度呢?</p>
-<p><strong>点值表示</strong>能把乘法的复杂度降低到 ${\rm O}(n)$, 相应的代价是 求值 和 插值 的复杂度</p>
-<blockquote>
-<p>如果序列记录 $F$ 的系数, 求值称作对序列作 DFT, 相应地, 插值称作 IDFT.</p>
-</blockquote>
-<p>容易把多点求值的过程写成下面的形式 :</p>
-<script type="math/tex; mode=display">
-\left[\begin{array}{c}
-A\left(x_{1}\right) \\
-A\left(x_{2}\right) \\
-\vdots \\
-A\left(x_{n+1}\right)
-\end{array}\right]=\left[\begin{array}{ccccc}
-1 & x_{1} & x_{1}^{2} & \cdots & x_{1}^{n} \\
-1 & x_{2} & x_{2}^{2} & \cdots & x_{2}^{n} \\
-\vdots & \vdots & \vdots & & \vdots \\
-1 & x_{n+1} & x_{n+1}^{2} & \cdots & x_{n+1}^{n}
-\end{array}\right]\left[\begin{array}{c}
-a_{0} \\
-a_{1} \\
-\vdots \\
-a_{n}
-\end{array}\right]</script><p>那么朴素求值是 ${\rm O}(n^2)$ 的矩乘, 朴素插值是 ${\rm O}(n^3)$ 的高斯消元或者 ${\rm O}(n^2)$ 的拉格朗日插值</p>
-<blockquote>
-<p> 中间是个范德蒙矩阵, 其行列式在任意 $x_i\ne x_j$ 时非 $0$ , 说明拉格朗日插值结果唯一</p>
-</blockquote>
-<p>一个优化的思路是分治 : </p>
-<p>先从求值侧入手, 由</p>
-<script type="math/tex; mode=display">
-A(x) = a_0+a_1x+a_2x^2+\cdots+a_nx^n</script><p>构造 $A^{[0]}(x)$ 和 $A^{[1]}(x)$ 分别记录偶数下标和奇数下标的项, </p>
-<script type="math/tex; mode=display">
-A^{[0]}(x) = a_0+a_2x+a_4x^2+\cdots,\;A^{[1]}(x) = a_1+a_3x+a_5x^2+\cdots</script><p>得到</p>
-<script type="math/tex; mode=display">
-A(x) = A^{[0]}(x^2) + xA^{[1]}(x^2)</script><p>我们需要的性质 : </p>
-<ul>
-<li><p>某一层里的处理复杂度是 ${\rm O}(n)$ , 主定理希望有 $|\{x^2\}|\leq\frac{1}{2} |\{x\}|$</p>
-<p>这直接启发我们选择 $x$ 则选择 $-x$, 而问题在于第一次递归后就会失效</p>
-<script type="math/tex; mode=display">
-\begin{aligned}
-A(-x) &= A^{[0]}(x^2) - xA^{[1]}(x^2)\\
-A(x) &= A^{[0]}(x^2) + xA^{[1]}(x^2)
-\end{aligned}</script></li>
-</ul>
-<p>不限于 $\Z$, 我们思考理想的 ${x}$ 集合 : </p>
-<ul>
-<li>快速计算某个 $x$ 的初值及其偶数次幂, $x^k$ 在乘法意义上<strong>循环</strong>, 这样计算次数是有界的</li>
-<li>插值点要求互异, $x^k$在一个循环内不能取等</li>
-<li>$|\{x^2\}| = \frac{1}{2}|\{x\}|$, 集合拥有每次运算后<strong>折半</strong>或更优的性质</li>
-<li>$x$ 和 $-x$ 只是一种一一对应关系, 如能在这个限制下一直递归, 说明 $\;|\{x\}|=2^k$, 最好还有 $|\{x\}|={\rm O}(n)$</li>
-</ul>
-<p>这样我们有一些经典的优秀集合, 选择复数下的<strong>单位根</strong>指向 FFT, 选择模意义下的<strong>原根(及替代物)</strong>指向 NTT.</p>
-<p>先看 FFT : </p>
-<p>我们选择的单位根集合是</p>
-<script type="math/tex; mode=display">
-\omega_n^k=\sin(\frac{2k\pi}{n})+i\cos(\frac{2k\pi}{n}),\;k\in[0,n-1],k\in\Z</script><p>单位根集合拥有完美的折半性质, 我们进行一次实际运算 : </p>
-<p>出于递归需要, 定义 $n=\min\{2^k|2^k\geq{\rm deg}\;F+{\rm deg}\;G+1\}$, 选取 $\omega_n^0,\cdots,\omega_n^{n-1}$, 试计算 $A(\omega_n^0,\cdots,\omega_n^{n-1})$</p>
-<p>由单位根性质易得</p>
-<script type="math/tex; mode=display">
-\begin{aligned}
-A(\omega_n^k) &= A^{[0]}(\omega_n^{2k}) + \omega_n^kA^{[1]}(\omega_n^{2k})= A^{[0]}(\omega_{n/2}^{k}) + \omega_n^kA^{[1]}(\omega_{n/2}^{k})\\
-A(\omega_n^{k+\frac{n}{2}}) &= A^{[0]}(\omega_n^{2k}) - \omega_n^kA^{[1]}(\omega_n^{2k})= A^{[0]}(\omega_{n/2}^{k}) - \omega_n^kA^{[1]}(\omega_{n/2}^{k})
-\end{aligned}</script><p>按式子递归就能完成 ${\rm O}(n\log n)$ 的 DFT 了.</p>
-<p>现在的关键是 IDFT 的复杂度, 我们先看一下取单位根时直接求逆的结果 : </p>
-<script type="math/tex; mode=display">
-\left[\begin{array}{ccccc}
-1 & \omega_n^0 & \omega_n^0 & \cdots & \omega_n^0 \\
-1 & \omega_n^1 & \omega_n^2 & \cdots & \omega_n^{n-1} \\
-\vdots & \vdots & \vdots & & \vdots \\
-1 & \omega_n^{n-1} & \omega_n^{2(n-1)} & \cdots & \omega_n^{(n-1)^2}
-\end{array}\right]^{-1}=\frac{1}{n}\left[\begin{array}{ccccc}
-
-1 & \omega_n^0 & \omega_n^0 & \cdots & \omega_n^0 \\
-1 & \omega_n^{-1} & \omega_n^{-2} & \cdots & \omega_n^{-(n-1)} \\
-\vdots & \vdots & \vdots & & \vdots \\
-1 & \omega_n^{-(n-1)} & \omega_n^{-2(n-1)} & \cdots & \omega_n^{-(n-1)^2}
-\end{array}\right]</script><p> 所以 IDFT 等价于选取 $\omega_n’ = -\omega_n$ 作为本原单位根, 对序列再作 DFT, 乘 $\large\frac{1}{n}$ 即可</p>
-<p>有了基于分治的 DFT &amp; IDFT, 乘法的复杂度就下降到了 ${\rm O}(n\log n)$ .</p>
-<p>转向 NTT 前, 我们对 FFT 作一些优化 : </p>
-<ul>
-<li><p>递归到底层各系数的最终位置, 如果能用 DP 的方式描述, 就能明显的加速 DFT</p>
-<p>举个 $0 - 7$ 的例子手玩, 得到 $0\;4\;2\;6\;1\;5\;3\;7$, 发现下标 $x$ 的元素落在其 ( 对$k$ ) 二进制<strong>反转</strong>的 ${\rm rev}(x)$ 处</p>
-<p>DP 一下 ${\rm rev}(x)$ : </p>
-<p>把每个数拆成 前面的部分 和 最后一位, 答案是把最后一位提到前面, 再拼上前面部分的反转</p>
-<p>可见前面的部分是 $r[i\gg1]\gg1$ , 把第一位补上去就是 $(i\;\&amp;\,1)\ll (k-1)$</p>
-<p>所以</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">Init() &#123;</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= n; ++ i)</span><br><span class="line">	rev[i] = (rev[i &gt;&gt; <span class="number">1</span>] &gt;&gt; <span class="number">1</span>) | ((i &amp; <span class="number">1</span>) &lt;&lt; (k - <span class="number">1</span>));</span><br><span class="line">	...</span><br><span class="line">&#125;</span><br><span class="line">FFT() &#123;</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= n; ++ i)</span><br><span class="line">		<span class="keyword">if</span> (i &lt; rev[i]) swap(A[i], A[rev[i]]);</span><br><span class="line">	...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-<li><p>对于 $H(x)=F(x)G(x)$ 而言,  我们要对 $F,G,H$ 各做一次 FFT,</p>
-<p>我们把 $G$ 放在 $F$ 的虚部上, $(F(x)+iG(x))^2=(F^2(x)-G^2(x))+2iF(x)G(x)$</p>
-<p>再把虚部取出来, 只需要两次 FFT. </p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">namespace</span> Poly &#123;</span><br><span class="line">    <span class="keyword">int</span> R[];</span><br><span class="line"></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">complex</span> &#123;</span></span><br><span class="line">        <span class="keyword">double</span> re, im;</span><br><span class="line">        <span class="built_in">complex</span>(<span class="keyword">double</span> re = <span class="number">0</span>,<span class="keyword">double</span> im = <span class="number">0</span>):re(re), im(im)&#123;&#125;</span><br><span class="line">        <span class="keyword">inline</span> <span class="built_in">complex</span> <span class="keyword">operator</span> + (<span class="keyword">const</span> <span class="built_in">complex</span> &amp;A) <span class="keyword">const</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="built_in">complex</span>(re + A.re, im + A.im);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">inline</span> <span class="built_in">complex</span> <span class="keyword">operator</span> - (<span class="keyword">const</span> <span class="built_in">complex</span> &amp;A) <span class="keyword">const</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="built_in">complex</span>(re - A.re, im - A.im);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">inline</span> <span class="built_in">complex</span> <span class="keyword">operator</span> * (<span class="keyword">const</span> <span class="built_in">complex</span> &amp;A) <span class="keyword">const</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="built_in">complex</span>(re * A.re - im * A.im, re * A.im + im * A.re);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">inline</span> <span class="keyword">void</span> <span class="keyword">operator</span> += (<span class="keyword">const</span> <span class="built_in">complex</span> &amp;A) &#123;</span><br><span class="line">            re += A.re, im += A.im;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">inline</span> <span class="keyword">void</span> <span class="keyword">operator</span> *= (<span class="keyword">const</span> <span class="built_in">complex</span> &amp;A) &#123;</span><br><span class="line">            <span class="keyword">double</span> T_re = re;</span><br><span class="line">            re = re * A.re - im * A.im;</span><br><span class="line">            im = T_re * A.im + im * A.re;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">inline</span> <span class="keyword">void</span> <span class="title">swap</span><span class="params">(<span class="built_in">complex</span> &amp;A, <span class="built_in">complex</span> &amp;B)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">double</span> T_re = A.re, T_im = A.im;</span><br><span class="line">        A.re = B.re, A.im = B.im;</span><br><span class="line">        B.re = T_re, B.im = T_im;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">inline</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">(<span class="keyword">int</span> N, <span class="keyword">int</span> k)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= N; ++ i)</span><br><span class="line">            R[i] = (R[i &gt;&gt; <span class="number">1</span>] &gt;&gt; <span class="number">1</span>) &amp; ((i &amp; <span class="number">1</span>) &lt;&lt; (k - <span class="number">1</span>));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">inline</span> <span class="keyword">void</span> <span class="title">DFT</span><span class="params">(<span class="built_in">complex</span> *T, <span class="keyword">int</span> N, <span class="keyword">int</span> opt)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 现在 T 的实数部分是其各项系数</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; N; ++ i)</span><br><span class="line">            <span class="keyword">if</span> (i &lt; R[i]) swap(T[i], T[R[i]]);</span><br><span class="line">        <span class="comment">// 通过 R, 序列成为递归底层的状态</span></span><br><span class="line">        <span class="comment">// 考虑从底层向上合并需要记录的量 : 当前层的半区间长, 向上转移需要的单位根, 各区间起点及偏移量</span></span><br><span class="line">        <span class="comment">// 使用消去引理后的递归式, 说明某个区间 2l 由其(重排后)的两个半区间 l 中 T[x] 的值线性组合而成</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; N; i &lt;&lt;= <span class="number">1</span>) &#123;</span><br><span class="line">            <span class="built_in">complex</span> w1 = (<span class="built_in">complex</span>) &#123;<span class="built_in">cos</span>(M_PI / i), opt * <span class="built_in">sin</span>(M_PI / i)&#125;;</span><br><span class="line">            <span class="comment">// 实际上是 2π/2i</span></span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; N; j += (i &lt;&lt; <span class="number">1</span>) &#123;</span><br><span class="line">                <span class="built_in">complex</span> wk = (<span class="built_in">complex</span>) &#123;<span class="number">1</span>, <span class="number">0</span>&#125;;</span><br><span class="line">                <span class="keyword">for</span> (<span class="keyword">int</span> k = <span class="number">0</span>; k &lt; i; ++ k, wk *= w1) &#123;</span><br><span class="line">                    <span class="built_in">complex</span> x = T[j + k], y = wk * T[j + k + i];</span><br><span class="line">                    T[j + k] = x + y;</span><br><span class="line">                    T[j + k + i] = x - y;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>大部分的计数题寻求模意义下的答案, 结束了 FFT 的思考, 我们考虑从复数域跳到离散域里, 寻找和单位根有同样性质的替代品.</p>
-<p>$\rm Upd:$ 待更新.</p>
-
-          
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/Polynomial-Algorithms/" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
