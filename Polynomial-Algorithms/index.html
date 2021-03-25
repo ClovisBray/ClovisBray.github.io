@@ -113,7 +113,7 @@
 <meta property="og:description" content="写在前面 :  基于 Generating Function 的计数问题, 最终要归化到对于一个特定形式幂级数 $F(x)$ 的处理  基于 Generating Function 的思想, 操作 $F$ 就是操作 $F(x)&#x3D; \sum_{i&#x3D;1}^na_ix^i\mod {x^n}$ 的系数序列  计数依赖于 Generating Function 的推导, 而结果的计算依赖于 Polyno">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-03-25T07:10:36.000Z">
-<meta property="article:modified_time" content="2021-03-25T07:18:01.119Z">
+<meta property="article:modified_time" content="2021-03-25T07:24:03.484Z">
 <meta property="article:author" content="Shinomiya">
 <meta property="article:tag" content="多项式">
 <meta property="article:tag" content="生成函数">
@@ -400,7 +400,7 @@ A(-x) &= A^{[0]}(x^2) - xA^{[1]}(x^2)\\
 A(x) &= A^{[0]}(x^2) + xA^{[1]}(x^2)
 \end{aligned}</script></li>
 </ul>
-<p>不限于 $\Z$, 我们思考理想的 ${x}$ 集合 : </p>
+<p>不限于 $\mathbb Z$, 我们思考理想的 ${x}$ 集合 : </p>
 <ul>
 <li>快速计算某个 $x$ 的初值及其偶数次幂, $x^k$ 在乘法意义上<strong>循环</strong>, 这样计算次数是有界的</li>
 <li>插值点要求互异, $x^k$在一个循环内不能取等</li>
@@ -411,7 +411,7 @@ A(x) &= A^{[0]}(x^2) + xA^{[1]}(x^2)
 <p>先看 FFT : </p>
 <p>我们选择的单位根集合是</p>
 <script type="math/tex; mode=display">
-\omega_n^k=\sin(\frac{2k\pi}{n})+i\cos(\frac{2k\pi}{n}),\;k\in[0,n-1],k\in\Z</script><p>单位根集合拥有完美的折半性质, 我们进行一次实际运算 : </p>
+\omega_n^k=\sin(\frac{2k\pi}{n})+i\cos(\frac{2k\pi}{n}),\;k\in[0,n-1],k\in\mathbb Z</script><p>单位根集合拥有完美的折半性质, 我们进行一次实际运算 : </p>
 <p>出于递归需要, 定义 $n=\min\{2^k|2^k\geq{\rm deg}\;F+{\rm deg}\;G+1\}$, 选取 $\omega_n^0,\cdots,\omega_n^{n-1}$, 试计算 $A(\omega_n^0,\cdots,\omega_n^{n-1})$</p>
 <p>由单位根性质易得</p>
 <script type="math/tex; mode=display">
