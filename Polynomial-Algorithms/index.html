@@ -105,15 +105,15 @@
 
 
 
-<meta name="description" content="写在前面 :  基于 GF 的计数问题, 最终要归到对于一个特定形式幂级数 $F(x)$ 的处理 基于 GF 的思想, 操作 $F$ 就是操作 $F(x)&#x3D; \sum_{i&#x3D;1}^na_ix^i\mod {x^n}$ 的系数序列  计数依赖于 GF 的推导, 而结果的计算依赖于多项式处理">
+<meta name="description" content="写在前面 :  基于 GF 的计数问题, 最终要归到对于一个特定形式幂级数 $F(x)$ 的处理 基于 GF 的思想, 操作 $F$ 就是操作 $F(x)&#x3D; \sum_{i&#x3D;1}^na_ix^i\mod {x^n}$ 的系数序列  计数依赖于 GF 的推导, 而结果的计算依赖于多项式处理     \newcommand{\f}{\frac} \newcommand{\r}{\rightarrow">
 <meta property="og:type" content="article">
 <meta property="og:title" content="多项式随笔">
 <meta property="og:url" content="http://example.com/Polynomial-Algorithms/index.html">
 <meta property="og:site_name" content="Shinomiya&#39;s Office">
-<meta property="og:description" content="写在前面 :  基于 GF 的计数问题, 最终要归到对于一个特定形式幂级数 $F(x)$ 的处理 基于 GF 的思想, 操作 $F$ 就是操作 $F(x)&#x3D; \sum_{i&#x3D;1}^na_ix^i\mod {x^n}$ 的系数序列  计数依赖于 GF 的推导, 而结果的计算依赖于多项式处理">
+<meta property="og:description" content="写在前面 :  基于 GF 的计数问题, 最终要归到对于一个特定形式幂级数 $F(x)$ 的处理 基于 GF 的思想, 操作 $F$ 就是操作 $F(x)&#x3D; \sum_{i&#x3D;1}^na_ix^i\mod {x^n}$ 的系数序列  计数依赖于 GF 的推导, 而结果的计算依赖于多项式处理     \newcommand{\f}{\frac} \newcommand{\r}{\rightarrow">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-03-25T07:10:36.000Z">
-<meta property="article:modified_time" content="2021-06-01T04:40:20.769Z">
+<meta property="article:modified_time" content="2021-06-01T10:09:28.337Z">
 <meta property="article:author" content="Shinomiya">
 <meta property="article:tag" content="多项式">
 <meta property="article:tag" content="生成函数">
@@ -347,7 +347,9 @@
 </li>
 </ol>
 </blockquote>
-<a id="more"></a>
+<script type="math/tex; mode=display">
+\newcommand{\f}{\frac}
+\newcommand{\r}{\rightarrow}</script><a id="more"></a>
 <h4 id="Multiplication"><a href="#Multiplication" class="headerlink" title="Multiplication"></a>Multiplication</h4><blockquote>
 <p>现有</p>
 <script type="math/tex; mode=display">
@@ -472,17 +474,45 @@ A(\omega_n^{k+\frac{n}{2}}) &= A^{[0]}(\omega_n^{2k}) - \omega_n^kA^{[1]}(\omega
 <script type="math/tex; mode=display">
 F(x) = \sum_{i=0}^n a_ix^i</script><p>满足</p>
 <script type="math/tex; mode=display">
-F(x)G(x)\equiv1\mod x^n\</script><p>请计算</p>
+F(x)G(x)\equiv1\mod x^m\</script><p>请计算</p>
 <script type="math/tex; mode=display">
 G(x)</script></blockquote>
-<p>想法是基于倍增.</p>
-<p>假设求出了$\mod x^{\lceil\frac{x}{2}\rceil}$ 下的答案 $G’(x)$, 这时我们有</p>
+<p>基于倍增, 相近于 DFT/IDFT 的分治法, 我们找到第一个 $2^n\geq m$ 的 $n$ 进行求逆, 再保留到 $x^m$ .</p>
+<p>直接设 $m=2^k$ :</p>
+<p>假设求出了$\mod x^{\frac{m}{2}}$ 下的答案 $H(x)$, 这时我们有</p>
 <script type="math/tex; mode=display">
-F(x)G(x)\equiv1,\;F(x)G'(x)\equiv1\mod x^{\lceil\frac{x}{2}\rceil}</script><p>从而</p>
+F(x)H(x)\equiv1\mod x^{\frac{m}{2}}</script><p>这指出$\mod x^{\frac{m}{2}}$ 下 $F(x)H(x)-1$ 的各项系数均为 0, 平方得到 : </p>
 <script type="math/tex; mode=display">
-G(x)-G'(x)\equiv0\mod x^{\lceil\frac{x}{2}\rceil}</script><p>进而</p>
+F^2(x)H^2(x)-2F(x)H(x)\equiv-1\mod x^{m}</script><p>进而</p>
 <script type="math/tex; mode=display">
-G(x)-2G(x)G'(x)+G'^2(x)\equiv0\mod x^{\lceil\frac{x}{2}\rceil}</script><p>未完待续.</p>
+F(x)(F(x)H^2(x)-2H(x))\equiv-1\mod x^{\frac{m}{2}}</script><p>即</p>
+<script type="math/tex; mode=display">
+G(x) = 2H(x)-F(x)H^2(x)</script><p>$m = 1$ 显然有 $H(x)=([x^0]F(x))^{-1}$.</p>
+<h4 id="Division"><a href="#Division" class="headerlink" title="Division"></a>Division</h4><blockquote>
+<p>现有 $F(x), G(x)$ , 满足 :</p>
+<script type="math/tex; mode=display">
+\deg F=n,\;\deg G=m\;(n\geq m)</script><p>请求出 $P(x),R(x)$, 满足 :</p>
+<script type="math/tex; mode=display">
+F(x)=P(x)G(x)+R(x)</script><p>使得</p>
+<script type="math/tex; mode=display">
+\deg P=n-m,\;\deg R\leq m-1</script></blockquote>
+<p>系数的<strong>反转</strong> :</p>
+<p>设 $[x^k]F(x)=a_k$ 其中 $0\leq k\leq n$, 考虑 $[x^k]H(x)=a_{n-k}$ , 显然 $H(x)=x^nF(\frac{1}{x})$.</p>
+<p>考察反转<strong>所有多项式</strong>前 $n$ 项形式下的除法式 :</p>
+<script type="math/tex; mode=display">
+x^nF(\f{1}{x})=x^n(P(\f{1}{x})G(\f{1}{x})+R(\f{1}{x}))</script><p>往乘积项分配 $x^n$ :</p>
+<script type="math/tex; mode=display">
+x^nF(\f{1}{x})=x^{n-m}P(\f{1}{x})x^mG(\f{1}{x})+x^nR(\f{1}{x})</script><p>反转前后 系数有意义的区间 :</p>
+<ul>
+<li>$F:[0,n]\r[0,n]$</li>
+<li><p>$G:[0,m]\r[n-m,n]$</p>
+</li>
+<li><p>$P:[0,n-m]\r[m,n]$</p>
+</li>
+<li><p>$R:[0,m-1]\r[n-m+1,n]$</p>
+</li>
+</ul>
+<p>这个条件下对两侧取 $\mod x^{}$</p>
 
       
     </div>
@@ -652,7 +682,7 @@ G(x)-2G(x)G'(x)+G'^2(x)\equiv0\mod x^{\lceil\frac{x}{2}\rceil}</script><p>未完
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#Multiplication"><span class="nav-number">1.</span> <span class="nav-text">Multiplication</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Inversion"><span class="nav-number">2.</span> <span class="nav-text">Inversion</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#Multiplication"><span class="nav-number">1.</span> <span class="nav-text">Multiplication</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Inversion"><span class="nav-number">2.</span> <span class="nav-text">Inversion</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Division"><span class="nav-number">3.</span> <span class="nav-text">Division</span></a></li></ol></div>
             
 
           </div>
