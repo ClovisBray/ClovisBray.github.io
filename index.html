@@ -465,8 +465,7 @@
 
       
         
-          
-            <blockquote>
+          <blockquote>
 <p>写在前面 :</p>
 <ol>
 <li>基于 GF 的计数问题, 最终要归到对于一个特定形式幂级数 $F(x)$ 的处理</li>
@@ -476,143 +475,13 @@
 </li>
 </ol>
 </blockquote>
-<h4 id="Multiplication"><a href="#Multiplication" class="headerlink" title="Multiplication"></a>Multiplication</h4><blockquote>
-<p>现有</p>
-<script type="math/tex; mode=display">
-F(x) = \sum_{i=0}^n a_ix^i,\;G(x) = \sum_{i=0}^mb_ix^i</script><p>请计算</p>
-<script type="math/tex; mode=display">
-H(x)=F(x)G(x)</script></blockquote>
-<p>如果基于<strong>系数表示</strong>, ${\rm O}(nm)$ 的做法是显然的, 有没有别的思考角度呢?</p>
-<p><strong>点值表示</strong>能把乘法的复杂度降低到 ${\rm O}(n)$, 相应的代价是 求值 和 插值 的复杂度</p>
-<blockquote>
-<p>如果序列记录 $F$ 的系数, 求值称作对序列作 DFT, 相应地, 插值称作 IDFT.</p>
-</blockquote>
-<p>容易把多点求值的过程写成下面的形式 :</p>
-<script type="math/tex; mode=display">
-\left[\begin{array}{c}
-A\left(x_{1}\right) \\
-A\left(x_{2}\right) \\
-\vdots \\
-A\left(x_{n+1}\right)
-\end{array}\right]=\left[\begin{array}{ccccc}
-1 & x_{1} & x_{1}^{2} & \cdots & x_{1}^{n} \\
-1 & x_{2} & x_{2}^{2} & \cdots & x_{2}^{n} \\
-\vdots & \vdots & \vdots & & \vdots \\
-1 & x_{n+1} & x_{n+1}^{2} & \cdots & x_{n+1}^{n}
-\end{array}\right]\left[\begin{array}{c}
-a_{0} \\
-a_{1} \\
-\vdots \\
-a_{n}
-\end{array}\right]</script><p>那么朴素求值是 ${\rm O}(n^2)$ 的矩乘, 朴素插值是 ${\rm O}(n^3)$ 的高斯消元或者 ${\rm O}(n^2)$ 的拉格朗日插值</p>
-<blockquote>
-<p> 中间是个范德蒙矩阵, 其行列式在任意 $x_i\ne x_j$ 时非 $0$ , 说明拉格朗日插值结果唯一</p>
-</blockquote>
-<p>一个优化的思路是分治 : </p>
-<p>先从求值侧入手, 由</p>
-<script type="math/tex; mode=display">
-A(x) = a_0+a_1x+a_2x^2+\cdots+a_nx^n</script><p>构造 $A^{[0]}(x)$ 和 $A^{[1]}(x)$ 分别记录偶数下标和奇数下标的项, </p>
-<script type="math/tex; mode=display">
-A^{[0]}(x) = a_0+a_2x+a_4x^2+\cdots,\;A^{[1]}(x) = a_1+a_3x+a_5x^2+\cdots</script><p>得到</p>
-<script type="math/tex; mode=display">
-A(x) = A^{[0]}(x^2) + xA^{[1]}(x^2)</script><p>我们需要的性质 : </p>
-<ul>
-<li><p>某一层里的处理复杂度是 ${\rm O}(n)$ , 主定理希望有 $|\{x^2\}|\leq\frac{1}{2} |\{x\}|$</p>
-<p>这直接启发我们选择 $x$ 则选择 $-x$, 而问题在于第一次递归后就会失效</p>
-<script type="math/tex; mode=display">
-\begin{aligned}
-A(-x) &= A^{[0]}(x^2) - xA^{[1]}(x^2)\\
-A(x) &= A^{[0]}(x^2) + xA^{[1]}(x^2)
-\end{aligned}</script></li>
-</ul>
-<p>不限于 $\Z$, 我们思考理想的 ${x}$ 集合 : </p>
-<ul>
-<li>快速计算某个 $x$ 的初值及其偶数次幂, $x^k$ 在乘法意义上<strong>循环</strong>, 这样计算次数是有界的</li>
-<li>插值点要求互异, $x^k$在一个循环内不能取等</li>
-<li>$|\{x^2\}| = \frac{1}{2}|\{x\}|$, 集合拥有每次运算后<strong>折半</strong>或更优的性质</li>
-<li>$x$ 和 $-x$ 只是一种一一对应关系, 如能在这个限制下一直递归, 说明 $\;|\{x\}|=2^k$, 最好还有 $|\{x\}|={\rm O}(n)$</li>
-</ul>
-<p>这样我们有一些经典的优秀集合, 选择复数下的<strong>单位根</strong>指向 FFT, 选择模意义下的<strong>原根(及替代物)</strong>指向 NTT.</p>
-<p>先看 FFT : </p>
-<p>我们选择的单位根集合是</p>
-<script type="math/tex; mode=display">
-\omega_n^k=\sin(\frac{2k\pi}{n})+i\cos(\frac{2k\pi}{n}),\;k\in[0,n-1],k\in\Z</script><p>单位根集合拥有完美的折半性质, 我们进行一次实际运算 : </p>
-<p>$\color{blue}\Delta$ 出于递归需要, 定义 $n=\min\{2^k|2^k\geq{\rm deg}\;F+{\rm deg}\;G+1\}$, 选取 $\omega_n^0,\cdots,\omega_n^{n-1}$, 试计算 $A(\omega_n^0,\cdots,\omega_n^{n-1})$</p>
-<p>由单位根性质易得</p>
-<script type="math/tex; mode=display">
-\begin{aligned}
-A(\omega_n^k) &= A^{[0]}(\omega_n^{2k}) + \omega_n^kA^{[1]}(\omega_n^{2k})= A^{[0]}(\omega_{n/2}^{k}) + \omega_n^kA^{[1]}(\omega_{n/2}^{k})\\
-A(\omega_n^{k+\frac{n}{2}}) &= A^{[0]}(\omega_n^{2k}) - \omega_n^kA^{[1]}(\omega_n^{2k})= A^{[0]}(\omega_{n/2}^{k}) - \omega_n^kA^{[1]}(\omega_{n/2}^{k})
-\end{aligned}</script><p>按式子递归就能完成 ${\rm O}(n\log n)$ 的 DFT 了.</p>
-<p>现在的关键是 IDFT 的复杂度, 我们先看一下取单位根时直接求逆的结果 : </p>
-<script type="math/tex; mode=display">
-\left[\begin{array}{ccccc}
-1 & \omega_n^0 & \omega_n^0 & \cdots & \omega_n^0 \\
-1 & \omega_n^1 & \omega_n^2 & \cdots & \omega_n^{n-1} \\
-\vdots & \vdots & \vdots & & \vdots \\
-1 & \omega_n^{n-1} & \omega_n^{2(n-1)} & \cdots & \omega_n^{(n-1)^2}
-\end{array}\right]^{-1}=\frac{1}{n}\left[\begin{array}{ccccc}
-
-1 & \omega_n^0 & \omega_n^0 & \cdots & \omega_n^0 \\
-1 & \omega_n^{-1} & \omega_n^{-2} & \cdots & \omega_n^{-(n-1)} \\
-\vdots & \vdots & \vdots & & \vdots \\
-1 & \omega_n^{-(n-1)} & \omega_n^{-2(n-1)} & \cdots & \omega_n^{-(n-1)^2}
-\end{array}\right]</script><p> 所以 IDFT 等价于选取 $\omega_n’ = -\omega_n$ 作为本原单位根, 对序列再作 DFT, 乘 $\large\frac{1}{n}$ 即可</p>
-<p>有了基于分治的 DFT &amp; IDFT, 乘法的复杂度就下降到了 ${\rm O}(n\log n)$ .</p>
-<p>转向 NTT 前, 我们对 FFT 作一些优化 : </p>
-<ul>
-<li><p>递归到底层各系数的最终位置, 如果能用 DP 的方式描述, 就能明显的加速 DFT</p>
-<p>举个 $0 - 7$ 的例子手玩, 得到 $0\;4\;2\;6\;1\;5\;3\;7$, 发现下标 $x$ 的元素落在其 ( 对$k$ ) 二进制<strong>反转</strong>的 ${\rm rev}(x)$ 处</p>
-<p>DP 一下 ${\rm rev}(x)$ : </p>
-<p>把每个数拆成 前面的部分 和 最后一位, 答案是把最后一位提到前面, 再拼上前面部分的反转</p>
-<p>可见前面的部分是 $r[i\gg1]\gg1$ , 把第一位补上去就是 $(i\;\&amp;\,1)\ll (k-1)$</p>
-<p>所以</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">Init() &#123;</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= n; ++ i)</span><br><span class="line">	rev[i] = (rev[i &gt;&gt; <span class="number">1</span>] &gt;&gt; <span class="number">1</span>) | ((i &amp; <span class="number">1</span>) &lt;&lt; (k - <span class="number">1</span>));</span><br><span class="line">	...</span><br><span class="line">&#125;</span><br><span class="line">FFT() &#123;</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= n; ++ i)</span><br><span class="line">		<span class="keyword">if</span> (i &lt; rev[i]) swap(A[i], A[rev[i]]);</span><br><span class="line">	...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-<li><p>对于 $H(x)=F(x)G(x)$ 而言,  我们要对 $F,G,H$ 各做一次 FFT,</p>
-<p>我们把 $G$ 放在 $F$ 的虚部上, $(F(x)+iG(x))^2=(F^2(x)-G^2(x))+2iF(x)G(x)$</p>
-<p>再把虚部取出来, 只需要两次 FFT. </p>
-</li>
-</ul>
-<p>大部分的计数题寻求模意义下的答案, 结束了 FFT 的思考, 我们考虑从复数域跳到离散域里, 寻找和单位根有同样性质的替代品.</p>
-<p>原根的基本性质如下 : </p>
-<script type="math/tex; mode=display">
-\forall x, y\in[1,p-1]\cap\Z:x\neq y\rightarrow g^x\neq g^y\mod p</script><p>需要指出的是, 选定的素数 $p$ 需要能表为 $p = a\cdot2^k+1$ 的形式, 例如 $998244353 = 119×2^{23}+1$.</p>
-<p>考虑如何构造一个 $|S|=2^k=n$ 的原根幂集合, 使其性质满足 FFT 中利用的单位根性质 : </p>
-<p>由上述的 $p$ 形式及单位根对圆周的均匀分割, 容易想到 : </p>
-<script type="math/tex; mode=display">
-\omega_n\leftrightarrow g^{\frac{p-1}{n}}</script><p>可见这对于任意的 $n\leq 2^{23}$, 能保证 $g^{\large\frac{p-1}{n}} \in \Z$.</p>
-<p>演算其与单位根等价的性质如下 : </p>
-<script type="math/tex; mode=display">
-\begin{aligned}
-&1.&&(g^{\frac{p-1}{n}})^x\cdot (g^{\frac{p-1}{n}})^y\equiv(g^{\frac{p-1}{n}})^{x+y}\mod p\\
-&2.&&(g^{\frac{p-1}{\frac{n}{2}}})^{\frac{k}{2}}\equiv(g^{\frac{p-1}{n}})^k\mod p\\
-&3.&&(g^{\frac{p-1}{n}})^{k + \frac{n}{2}}\equiv -(g^{\frac{p-1}{n}})^k\mod p\\
-&4.&&(g^{\frac{p-1}{n}})^{k+n} \equiv (g^{\frac{p-1}{n}})^k\mod p
-\end{aligned}</script><p>其中 $3.$ 的证明只需一步 $\rm Wilson$ 定理. 利用 $(g^{\frac{p-1}{n}})$ 代换 $\omega_n$, 补上取模的部分就能完成 NTT. </p>
-<p>IDFT 的代数证明在 FFT 中利用上述性质可做, 故此处略去.</p>
-<p>在保持模数性质的条件下, 我们试着不依赖原根, 只是寻找一个满足 ${\rm ord}(v) = 2^k$ 的数 $v$ :</p>
-<p>假设我们已知 $p - 1=s\cdot 2^r$ 其中 $s$ 为奇数, 随机一个二次非剩余 $v$, 认为对于某个原根 $g$ 有 $g^i\equiv v\mod p$ 且有 $i$ 为奇数.</p>
-<p>则有 :</p>
-<script type="math/tex; mode=display">
-{\rm ord}(v^s)={\rm ord}(g^{si})=\frac{s\cdot2^r}{\gcd(s\cdot2^r,si)}=2^r</script><p>这样只需要取 $\omega_n\Leftrightarrow(v^s)^{\large\frac{2^r}{n}}$.</p>
-<h4 id="Inversion"><a href="#Inversion" class="headerlink" title="Inversion"></a>Inversion</h4><blockquote>
-<p>现有</p>
-<script type="math/tex; mode=display">
-F(x) = \sum_{i=0}^n a_ix^i</script><p>满足</p>
-<script type="math/tex; mode=display">
-F(x)G(x)\equiv1\mod x^n\</script><p>请计算</p>
-<script type="math/tex; mode=display">
-G(x)</script></blockquote>
-<p>想法是基于倍增.</p>
-<p>假设求出了$\mod x^{\lceil\frac{x}{2}\rceil}$ 下的答案 $G’(x)$, 这时我们有</p>
-<script type="math/tex; mode=display">
-F(x)G(x)\equiv1,\;F(x)G'(x)\equiv1\mod x^{\lceil\frac{x}{2}\rceil}</script><p>从而</p>
-<script type="math/tex; mode=display">
-G(x)-G'(x)\equiv0\mod x^{\lceil\frac{x}{2}\rceil}</script><p>进而</p>
-<script type="math/tex; mode=display">
-G(x)-2G(x)G'(x)+G'^2(x)\equiv0\mod x^{\lceil\frac{x}{2}\rceil}</script><p>未完待续.</p>
-
-          
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/Polynomial-Algorithms/" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
